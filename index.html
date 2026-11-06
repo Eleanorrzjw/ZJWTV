@@ -1,0 +1,276 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0}[hidden]{display:none!important}</style>
+<title>ZJW Whirlwind</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=IBM+Plex+Mono:wght@400;500&family=Silkscreen:wght@400;700&display=swap">
+<style>
+/* Layout: a white cover, then an old TV set into an aged-white wall. The screen holds one big PLAY button; the film plays under the scanlines and noise; LEAVE returns to the cover. Single deliberate look, same in any theme. */
+:root{
+  --paper:#ffffff;
+  --ink:#17151c;
+  --ink-soft:#6d6876;
+  --wall:#f01414;
+  --deep:#1f2ff0;
+  --sky:#1c8cff;
+  --yellow:#ffe000;
+  --pink:#ff7ab8;
+  --f-system:"Silkscreen","Courier New",monospace;
+  --f-hand:"Gaegu","Comic Sans MS","Chalkboard SE",cursive;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-mono);overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+:focus-visible{outline:3px dashed var(--ink);outline-offset:4px}
+.full{position:fixed;inset:0}
+.blink{animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- white cover ---------- */
+#cover{display:grid;place-items:center;background:var(--paper);z-index:3;transition:opacity .6s}
+#cover .lines{display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;padding-inline:max(16px,env(safe-area-inset-left,0px))}
+#cover .tag{font-family:var(--f-system);font-size:12px;letter-spacing:.2em;color:var(--ink-soft)}
+#cover p{margin:0;font-size:clamp(15px,1.6vw,19px);letter-spacing:.02em;max-width:34ch;line-height:1.5}
+#yes{font-size:clamp(15px,1.6vw,19px);color:var(--ink-soft);padding:6px 10px}
+#yes:hover{color:var(--ink)}
+.dots{position:absolute;right:calc(9vw + env(safe-area-inset-right,0px));bottom:calc(11vh + env(safe-area-inset-bottom,0px));display:flex;gap:9px;align-items:center}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--wall)}
+.dot+.dot{width:4px;height:4px;background:var(--yellow);transform:translateY(3px)}
+
+/* ---------- the TV room: aged white wall ---------- */
+#room{z-index:2;box-sizing:border-box;height:100vh;background:#efe9dc;display:grid;place-items:center;
+  clip-path:circle(0% at var(--ox,80%) var(--oy,85%));transition:clip-path 1.2s cubic-bezier(.7,0,.2,1);
+  padding:calc(24px + env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px))}
+#room.open{clip-path:circle(150% at var(--ox,80%) var(--oy,85%))}
+#room::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 45%,rgba(255,255,255,.5) 0%,rgba(255,255,255,0) 60%),
+    radial-gradient(ellipse at 100% 100%,rgba(150,120,70,.2) 0%,rgba(150,120,70,0) 45%),
+    radial-gradient(ellipse at 0% 0%,rgba(150,120,70,.14) 0%,rgba(150,120,70,0) 40%)}
+#room::after{content:"";position:absolute;inset:0;pointer-events:none;background-image:var(--pixnoise);background-size:128px 128px;image-rendering:pixelated;opacity:.42;mix-blend-mode:multiply}
+
+.tv{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:22px;width:min(100%,calc((100vh - 170px) * 16 / 9))}
+.bezel{position:relative;width:100%;aspect-ratio:16/9;padding:clamp(8px,1vw,12px);box-sizing:border-box;background:var(--deep);border-radius:26px;
+  box-shadow:-5px -5px 0 5px #a3956f,5px 5px 0 5px #fffdf6,0 0 0 10px #d2c5a4,-2px -2px 0 12px #b9ab88,2px 2px 0 12px #fffaf0,
+    inset 6px 6px 0 #0c179c,inset 11px 11px 0 rgba(12,23,156,.55),inset -4px -4px 0 rgba(255,255,255,.4)}
+.screen{position:relative;width:100%;height:100%;overflow:hidden;border-radius:30px / 44px;background:#0b0b12;cursor:none}
+.screen *{cursor:none}
+#film{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:1;background:#000}
+.idle #film{filter:grayscale(.6) brightness(.55)}
+
+/* overlays on the screen, under the CRT layers */
+.overlay{position:absolute;inset:0;z-index:4;display:grid;place-items:center;transition:opacity .4s}
+.overlay[hidden]{display:none}
+.stack{display:flex;flex-direction:column;align-items:center;gap:18px}
+.chan{font-family:var(--f-system);font-size:clamp(11px,1vw,14px);color:#fff;letter-spacing:.14em;text-shadow:0 0 6px rgba(255,255,255,.6)}
+.playbtn{width:clamp(64px,12vw,170px);aspect-ratio:1;display:grid;place-items:center;filter:drop-shadow(4px 4px 0 rgba(0,0,0,.45));transition:transform .15s}
+.playbtn svg{width:100%;height:100%;display:block}
+.playbtn:hover{transform:scale(1.07)}
+.playbtn:active{transform:scale(.96)}
+.pixbtn{font-family:var(--f-system);font-size:clamp(14px,1.4vw,20px);color:var(--wall);background:#fff;padding:10px 18px 12px;
+  clip-path:polygon(0 6px,3px 6px,3px 3px,6px 3px,6px 0,calc(100% - 6px) 0,calc(100% - 6px) 3px,calc(100% - 3px) 3px,calc(100% - 3px) 6px,100% 6px,100% calc(100% - 6px),calc(100% - 3px) calc(100% - 6px),calc(100% - 3px) calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 3px),3px calc(100% - 3px),3px calc(100% - 6px),0 calc(100% - 6px))}
+.pixbtn:hover{background:var(--yellow)}
+.pixbtn.alt{color:#fff;background:var(--deep)}
+.pixbtn.alt:hover{background:var(--sky)}
+.row{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.endline{font-family:var(--f-hand);font-weight:700;font-size:clamp(20px,2.2vw,32px);color:#fff;text-align:center;text-shadow:0 0 8px rgba(255,255,255,.4)}
+.osd{position:absolute;z-index:4;left:clamp(22px,3vw,40px);top:clamp(16px,2.4vw,30px);font-family:var(--f-system);font-size:clamp(11px,1.1vw,15px);font-weight:700;letter-spacing:.14em;color:#fff;text-shadow:0 0 4px #fff,0 0 12px rgba(255,255,255,.7),2px 2px 0 rgba(0,0,0,.4);pointer-events:none}
+.rec{position:absolute;z-index:4;right:clamp(22px,3vw,40px);top:clamp(16px,2.4vw,30px);display:flex;align-items:center;gap:8px;font-family:var(--f-system);font-size:14px;color:var(--pink);pointer-events:none;opacity:0;transition:opacity .3s}
+.rec i{width:12px;height:12px;border-radius:50%;background:var(--pink);animation:blink 1s steps(1) infinite}
+.playing .rec{opacity:1}
+
+/* CRT layers on top: scanlines, grain, rolling bar, colour specks, bulge */
+.crt{position:absolute;inset:0;z-index:9;pointer-events:none;border-radius:inherit;
+  background:repeating-linear-gradient(0deg,rgba(0,0,20,.16) 0 1px,transparent 1px 3px),radial-gradient(ellipse at center,transparent 58%,rgba(0,0,40,.42) 100%)}
+.crt::before{content:"";position:absolute;inset:-50%;background-image:var(--noise);background-size:200px 200px;opacity:.16;mix-blend-mode:overlay;animation:grain .5s steps(4) infinite}
+.crt::after{content:"";position:absolute;left:0;right:0;height:16%;top:-20%;background:linear-gradient(transparent,rgba(255,255,255,.07),transparent);animation:roll 7s linear infinite}
+@keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-7%,4%)}50%{transform:translate(5%,-6%)}75%{transform:translate(-3%,8%)}100%{transform:translate(6%,2%)}}
+@keyframes roll{to{top:110%}}
+#sparkle{position:absolute;inset:0;width:100%;height:100%;z-index:8;pointer-events:none;image-rendering:pixelated;mix-blend-mode:screen;opacity:.7}
+.screen::after{content:"";position:absolute;inset:0;z-index:8;pointer-events:none;border-radius:inherit;
+  box-shadow:inset 0 0 0 3px rgba(5,5,20,.7),inset 0 0 26px 8px rgba(5,5,25,.6),inset 0 0 70px 20px rgba(5,5,25,.28);
+  background:radial-gradient(ellipse 55% 45% at 42% 36%,rgba(255,255,255,.16) 0%,rgba(255,255,255,.06) 45%,rgba(255,255,255,0) 70%),
+    radial-gradient(ellipse 18% 9% at 26% 16%,rgba(255,255,255,.22) 0%,rgba(255,255,255,0) 100%),
+    radial-gradient(ellipse at center,rgba(0,0,0,0) 58%,rgba(5,5,30,.35) 100%)}
+.pxcur{position:absolute;left:0;top:0;z-index:7;width:20px;height:34px;pointer-events:none;image-rendering:pixelated;display:none;will-change:transform}
+.screen.hover .pxcur{display:block}
+
+/* under the TV */
+.deck{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;padding:0 6px;box-sizing:border-box}
+.brand{font-family:var(--f-system);font-size:11px;letter-spacing:.2em;color:#9a8e74}
+.knobs{display:flex;align-items:center;gap:14px}
+.knob{width:26px;height:26px;border-radius:50%;background:var(--wall);box-shadow:-2px -2px 0 2px #a3956f,2px 2px 0 2px #fffdf6,inset 3px 3px 0 #a8181c}
+.knob+.knob{background:var(--yellow);box-shadow:-2px -2px 0 2px #a3956f,2px 2px 0 2px #fffdf6,inset 3px 3px 0 #c9a800}
+#leave{font-family:var(--f-system);font-size:13px;color:var(--wall);display:flex;align-items:center;gap:8px}
+#leave i{width:22px;height:22px;border-radius:50%;background:var(--sky);box-shadow:0 4px 0 #0a63cc}
+#leave:active i{transform:translateY(3px);box-shadow:0 1px 0 #0a63cc}
+.right{display:flex;align-items:center;gap:26px;justify-self:end}
+.deck{display:grid!important;grid-template-columns:1fr auto 1fr}
+#snd{justify-self:start}
+#snd{font-family:var(--f-system);font-size:12px;color:var(--deep);display:flex;align-items:center;gap:12px;min-width:132px}
+#snd .cap{width:50px;height:38px;display:grid;place-items:center;border-radius:7px;background:#fffaf0;color:var(--deep);
+  box-shadow:inset 3px 3px 0 #ffffff,inset -3px -3px 0 #e2d7bc,0 0 0 2px #b9ab88,0 6px 0 2px #a3956f,0 9px 6px 2px rgba(90,70,30,.25);
+  transform:translateY(-3px);transition:transform .08s,box-shadow .08s,background .08s}
+#snd svg{width:24px;height:19px;display:block}
+#snd .x{display:none}
+#snd:hover .cap{background:#ffffff;color:var(--sky)}
+#snd:active .cap,#snd[aria-pressed="false"] .cap{transform:translateY(2px);background:#ece4d0;color:#9a8e74;
+  box-shadow:inset 3px 3px 0 #d6cbb0,inset -2px -2px 0 #f6f0e2,0 0 0 2px #b9ab88,0 1px 0 2px #a3956f}
+#snd[aria-pressed="false"]{color:#9a8e74}
+#snd[aria-pressed="false"] .w{display:none}
+#snd[aria-pressed="false"] .x{display:inline}
+
+@media (prefers-reduced-motion:reduce){
+  .blink,.crt::before,.crt::after,.rec i{animation:none}
+  #room{transition:none}
+}
+</style>
+
+<section id="cover" class="full" aria-label="Cover">
+  <div class="lines">
+    <span class="tag">ZJW &middot; TORNADO</span>
+    <p>Want to know where my attention usually goes?</p>
+    <button id="yes" type="button">[ <span class="blink">Y</span> ]</button>
+  </div>
+  <div class="dots" aria-hidden="true"><span class="dot"></span><span class="dot"></span></div>
+</section>
+
+<section id="room" class="full" aria-label="Old television" hidden>
+  <div class="tv">
+    <div class="bezel">
+      <div class="screen idle" id="screen">
+        <video id="film" src="img/whirlwind.mp4" poster="img/whirlwind.jpg" playsinline preload="auto"></video>
+        <span class="osd" aria-hidden="true">ZJW&middot;TV &middot; CH 03</span>
+        <span class="rec" aria-hidden="true"><i></i>PLAY</span>
+        <div class="overlay" id="start">
+          <div class="stack">
+                        <button class="playbtn" id="play" type="button" aria-label="Play the film">
+              <svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
+                <rect x="2" y="1" width="12" height="14" fill="#ffffff"/><rect x="1" y="2" width="14" height="12" fill="#ffffff"/>
+                <rect x="6" y="4" width="1" height="8" fill="#f01414"/><rect x="7" y="4" width="1" height="8" fill="#f01414"/>
+                <rect x="8" y="5" width="1" height="6" fill="#f01414"/><rect x="9" y="6" width="1" height="4" fill="#f01414"/><rect x="10" y="7" width="1" height="2" fill="#f01414"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="overlay" id="end" hidden>
+          <div class="stack">
+            <span class="endline">Thanks for watching.<br>Now step into the community.</span>
+            <div class="row">
+              <button class="pixbtn alt" id="again" type="button">&#8635; AGAIN</button>
+              <button class="pixbtn" id="leave2" type="button">LEAVE &rarr;</button>
+            </div>
+          </div>
+        </div>
+        <img class="pxcur" id="pxcur" alt="" aria-hidden="true">
+        <canvas id="sparkle" aria-hidden="true"></canvas>
+        <div class="crt" aria-hidden="true"></div>
+      </div>
+    </div>
+    <div class="deck">
+      <button id="snd" type="button" aria-pressed="true" title="Sound (M)"><span class="cap"><svg viewBox="0 0 10 8" shape-rendering="crispEdges" aria-hidden="true" fill="currentColor"><rect x="0" y="2" width="2" height="4"/><rect x="2" y="1" width="1" height="6"/><rect x="3" y="0" width="1" height="8"/><g class="w"><rect x="5" y="3" width="1" height="2"/><rect x="6" y="2" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="8" y="1" width="1" height="6"/></g><g class="x"><rect x="5" y="2" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="7" y="4" width="1" height="1"/><rect x="8" y="5" width="1" height="1"/><rect x="8" y="2" width="1" height="1"/><rect x="7" y="3" width="1" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="5" y="5" width="1" height="1"/></g></svg></span><span class="lbl">SOUND ON</span></button>
+      <span class="knobs"><i class="knob" aria-hidden="true"></i><i class="knob" aria-hidden="true"></i></span>
+      <span class="right"><button id="leave" type="button"><i></i>LEAVE</button></span>
+    </div>
+  </div>
+</section>
+
+<script>
+const $=s=>document.querySelector(s);
+const cover=$('#cover'), room=$('#room'), scr=$('#screen'), film=$('#film'), start=$('#start'), end=$('#end');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let state='cover';
+
+/* ---------- textures: a soft grain tile and aged-paper pixel specks ---------- */
+(function(){ try{
+  const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d'), d=g.createImageData(128,128);
+  for(let i=0;i<d.data.length;i+=4){ const v=Math.random()*255; d.data[i]=d.data[i+1]=d.data[i+2]=v; d.data[i+3]=255; }
+  g.putImageData(d,0,0); document.documentElement.style.setProperty('--noise',`url(${c.toDataURL()})`);
+  const p=document.createElement('canvas'); p.width=p.height=64; const h=p.getContext('2d');
+  for(let i=0;i<520;i++){ const a=Math.random(); h.fillStyle=a<.6?`rgba(150,120,80,${.12+Math.random()*.18})`:a<.9?`rgba(120,100,70,${.2+Math.random()*.2})`:'rgba(255,255,255,.7)'; h.fillRect((Math.random()*64)|0,(Math.random()*64)|0,1,1); }
+  for(let y=0;y<64;y+=2){ h.fillStyle='rgba(140,115,80,.05)'; h.fillRect(0,y,64,1); }
+  document.documentElement.style.setProperty('--pixnoise',`url(${p.toDataURL()})`);
+}catch(e){} })();
+
+/* ---------- pixel cursor, drawn inside the screen under the noise ---------- */
+(function(){
+  const rows=["X","XX","X.X","X..X","X...X","X....X","X.....X","X......X","X.......X","X........X","X.....XXXX","X..X..X","X.X X..X","XX  X..X","X    X..X","     X..X","      XX"];
+  let r=''; rows.forEach((row,y)=>[...row].forEach((ch,x)=>{ if(ch==='X') r+=`<rect x="${x*2}" y="${y*2}" width="2" height="2" fill="#e01010"/>`; else if(ch==='.') r+=`<rect x="${x*2}" y="${y*2}" width="2" height="2" fill="#ffffff"/>`; }));
+  const cur=$('#pxcur'); cur.src='data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="20" height="34" viewBox="0 0 20 34" shape-rendering="crispEdges">${r}</svg>`);
+  scr.addEventListener('pointermove',e=>{ const b=scr.getBoundingClientRect(); cur.style.transform=`translate(${e.clientX-b.left}px,${e.clientY-b.top}px)`; scr.classList.add('hover'); },{passive:true});
+  scr.addEventListener('pointerleave',()=>scr.classList.remove('hover'));
+})();
+
+/* ---------- colour specks flickering on the glass ---------- */
+const sp=$('#sparkle'), spx=sp.getContext('2d'), SPC=['#ffffff','#ff7ab8','#1c8cff','#c8f020','#ffe000'];
+let spT=0, raf=0;
+function sizeSpark(){ sp.width=Math.ceil(scr.clientWidth/4); sp.height=Math.ceil(scr.clientHeight/4); }
+function sparkle(t){
+  if(t-spT>70){ spT=t; const w=sp.width,h=sp.height; spx.clearRect(0,0,w,h);
+    const n=reduce?0:(Math.random()<.06?300:44);
+    for(let i=0;i<n;i++){ spx.fillStyle=SPC[(Math.random()*SPC.length)|0]; spx.globalAlpha=.25+Math.random()*.6; spx.fillRect((Math.random()*w)|0,(Math.random()*h)|0,1,1); }
+    if(!reduce&&Math.random()<.04){ spx.globalAlpha=.35; spx.fillStyle=SPC[(Math.random()*SPC.length)|0]; spx.fillRect(0,(Math.random()*h)|0,w,1); }
+    spx.globalAlpha=1; }
+  if(state==='tv') raf=requestAnimationFrame(sparkle);
+}
+window.addEventListener('resize',()=>{ if(state==='tv') sizeSpark(); });
+
+/* ---------- small sounds ---------- */
+let ac=null;
+let muted=false; try{ muted=localStorage.getItem('zjw-muted')==='1'; }catch(e){}
+const snd=$('#snd');
+function setSnd(){ snd.setAttribute('aria-pressed',String(!muted)); snd.querySelector('.lbl').textContent=muted?'SOUND OFF':'SOUND ON'; film.muted=muted; }
+snd.addEventListener('click',()=>{ muted=!muted; try{ localStorage.setItem('zjw-muted',muted?'1':'0'); }catch(e){} setSnd(); if(!muted) blip(990); });
+setSnd();
+function blip(f,len=.08){ if(muted) return; try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==='suspended') ac.resume();
+  const n=ac.currentTime,o=ac.createOscillator(),g=ac.createGain(); o.type='square'; o.frequency.value=f;
+  g.gain.setValueAtTime(.05,n); g.gain.exponentialRampToValueAtTime(.001,n+len); o.connect(g).connect(ac.destination); o.start(n); o.stop(n+len+.02); }catch(e){} }
+
+/* ---------- flow: cover -> TV -> play -> end -> leave ---------- */
+function openTV(){
+  if(state!=='cover') return;
+  state='tv'; blip(660);
+  const d=cover.querySelector('.dot').getBoundingClientRect();
+  room.style.setProperty('--ox',d.left+d.width/2+'px'); room.style.setProperty('--oy',d.top+d.height/2+'px');
+  room.hidden=false; room.classList.remove('open'); resetScreen();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ room.classList.add('open'); sizeSpark(); raf=requestAnimationFrame(sparkle); }));
+  setTimeout(()=>{ if(state==='tv'){ cover.style.opacity=0; cover.style.pointerEvents='none'; $('#play').focus({preventScroll:true}); } },900);
+  poke();
+}
+function resetScreen(){
+  film.pause(); try{ film.currentTime=0; }catch(e){}
+  scr.classList.add('idle'); scr.classList.remove('playing'); start.hidden=false; end.hidden=true;
+}
+function play(){
+  blip(880); start.hidden=true; end.hidden=true; scr.classList.remove('idle'); scr.classList.add('playing');
+  try{ film.currentTime=0; }catch(e){}
+  film.muted=muted; const p=film.play(); if(p&&p.catch) p.catch(()=>{ muted=true; setSnd(); film.play().catch(()=>{}); });
+  poke();
+}
+film.addEventListener('ended',()=>{ scr.classList.remove('playing'); scr.classList.add('idle'); end.hidden=false; $('#leave2').focus({preventScroll:true}); poke(); });
+function leave(){
+  if(state!=='tv') return;
+  blip(440,.15); state='cover'; cancelAnimationFrame(raf); film.pause();
+  cover.style.opacity=1; cover.style.pointerEvents='auto';
+  room.classList.remove('open'); setTimeout(()=>{ if(state==='cover'){ room.hidden=true; resetScreen(); } },700);
+  $('#yes').focus({preventScroll:true});
+}
+$('#yes').addEventListener('click',openTV);
+$('#play').addEventListener('click',play);
+$('#again').addEventListener('click',play);
+$('#leave').addEventListener('click',leave);
+$('#leave2').addEventListener('click',leave);
+document.addEventListener('keydown',e=>{
+  if(state==='cover'&&(e.key==='y'||e.key==='Y'||e.key==='Enter')){ e.preventDefault(); openTV(); }
+  else if(state==='tv'&&e.key==='Escape') leave();
+  else if(state==='tv'&&(e.key==='m'||e.key==='M')) snd.click();
+  else if(state==='tv'&&e.key===' '&&document.activeElement===document.body){ e.preventDefault(); if(film.paused&&!start.hidden) play(); else if(film.paused) film.play(); else film.pause(); }
+});
+/* click the picture to pause / resume while it plays */
+film.addEventListener('click',()=>{ if(!scr.classList.contains('playing')) return; film.paused?film.play():film.pause(); });
+
+/* nobody around for 2 minutes and nothing playing: back to the white cover */
+let idle=null;
+function poke(){ clearTimeout(idle); if(state==='tv') idle=setTimeout(()=>{ if(film.paused) leave(); else poke(); },120000); }
+['pointermove','pointerdown','keydown','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,poke,{passive:true}));
+</script>
